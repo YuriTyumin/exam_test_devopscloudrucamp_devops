@@ -1,9 +1,9 @@
 # Используем официальный образ Python
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Установка переменных окружения
-ENV AUTHOR="Ваше имя"
-ENV UUID="Любая произвольная строка"
+ENV AUTHOR="This could be your name"
+ENV UUID="9259632c-7c5c-4e1b-b55f-1310f4e50c47"
 
 # Создание и переключение на рабочую директорию
 WORKDIR /app

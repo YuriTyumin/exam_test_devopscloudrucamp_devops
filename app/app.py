@@ -9,7 +9,7 @@ app = Flask(__name__)
 @app.route('/hostname', methods=['GET'])
 def get_hostname():
     return jsonify({'hostname': platform.node()})
-
+    
 # Получение имени автора из переменной окружения
 @app.route('/author', methods=['GET'])
 def get_author():
