@@ -1,0 +1,60 @@
+---
+- name: auth
+  hosts: vm #defined in ansible inventory hosts file
+  #become: yes
+  vars:
+    users:
+    - username: cloudru
+      password: $6$.UY/zq6YMgyffrs2$tLer9DMp4dDuMDtKwmno8BToiqXrO.xmk9ISOHUIWPrj4M9zAO/Chc/u0rGPiJ1FuuGf5p8JnfjoTdbcxbOjN/ #hashed password 'cloudpass' with 'mkpasswd --method=sha-512'
+
+  tasks:
+    - name: Ping me
+      ping:
+
+    - name: Print OS
+      debug:
+        msg: "{{ ansible_os_family }}"
+          
+    - name: Add the user 'cloudru' with the specific password 'cloudpass'
+      user:
+          name: "{{ item.username }}"
+          shell: /bin/bash
+          createhome: yes
+          generate_ssh_key: yes
+          ssh_key_bits: 2048
+          ssh_key_file: .ssh/id_rsa
+          password: "{{ item.password }}"
+          update_password: always
+      with_items: "{{ users }}"
+
+    - name: Copy pubkey of user 'cloudru' to the authorized_keys file on the remote host
+      copy:
+        src: /path/to/file/id_rsa.pub
+        dest: /home/cloudru/.ssh/authorized_keys
+        owner: cloudru
+        group: cloudru
+        mode: 0600
+
+    - name: Update SSH configuration to be more secure.
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^PermitRootLogin"
+          line: "PermitRootLogin no"
+        - regexp: "^RSAAuthentication"
+          line: "RSAAuthentication yes"
+        - regexp: "^PubkeyAuthentication"
+          line: "PubkeyAuthentication yes"
+        - regexp: "^AuthorizedKeysFile"
+          line: "AuthorizedKeysFile .ssh/authorized_keys"
+      notify: restart ssh
+
+  handlers:
+  # Note: Use 'sshd' for Red Hat and its derivatives.
+  - name: restart ssh
+    service: name=ssh state=restarted

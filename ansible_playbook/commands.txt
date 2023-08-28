@@ -1,0 +1,1 @@
+ansible-playbook run_it.yaml -k --user=root
